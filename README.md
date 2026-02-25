@@ -1,7 +1,6 @@
 # Wiki Physics Game 🕹️⚛️
 
 ## [Jogue o Wiki Physics Game agora!](https://cometsinthesky.github.io/wiki-physics-game/)  
-*(adicione aqui o link do seu GitHub Pages quando publicar)*
 
 Um **jogo/visual novel interativo** e ideal para sala de aula, criado para apoiar a aprendizagem de **Física (Forças & Movimento)** com **simulação em tempo real** e **gráficos animados**. Indicado para **Middle Years / Year 6–9** (adaptável para outros anos e currículos).
 
