@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Wiki Physics Game • Física Visual Novel</title>
+  <meta name="description" content="Jogo Visual novel educacional (HTML + JS) com Wikipe-tan: deslocamento, velocidade, aceleração, forças e atrito, com simulação e gráfico." />
+<style>
+  :root{
+    --bg0:#050915;
+    --bg1:#0a1638;
+    --stroke: rgba(255,255,255,.18);
+    --ink: rgba(255,255,255,.92);
+    --muted: rgba(255,255,255,.72);
+    --good:#44ffb2;
+    --bad:#ff5f7a;
+    --radius: 14px;
+    --shadow: 0 18px 50px rgba(0,0,0,.45);
+    --shadow2: 0 12px 30px rgba(0,0,0,.35);
+
+    /* espaçamento geral */
+    --pad: 6px;     /* espaço do conteúdo até borda (top também) */
+    --gap: 6px;     /* espaçamento entre caixas */
+
+    /* tipografia */
+    --h2: 24px;     /* títulos (fixo) */
+    --p:  clamp(22px, 2.2vw, 22px);
+    --btn: 16px;    /* botões (fixo) */
+
+    --bg-url: none;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    color:var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
+    background:
+      radial-gradient(1200px 700px at 18% 12%, rgba(130,170,255,.18), transparent 20%),
+      radial-gradient(900px 600px at 85% 22%, rgba(255,180,120,.14), transparent 20%),
+      radial-gradient(900px 900px at 50% 95%, rgba(80,255,215,.10), transparent 20%),
+      linear-gradient(180deg, var(--bg0), var(--bg1));
+    overflow:hidden; /* sem autorolagem */
+  }
+
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image: var(--bg-url);
+    background-size: cover;
+    background-position: center;
+    background-repeat:no-repeat;
+    transform: scale(1.03);
+    opacity:.95;
+    filter: saturate(1.05) contrast(1.02);
+    z-index:-2;
+  }
+  body::after{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(900px 600px at 60% 40%, transparent 90%, rgba(0,0,0,.55) 100%),
+      linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.62));
+    opacity:.76;
+    z-index:-1;
+    pointer-events:none;
+  }
+
+  .wrap{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    gap: var(--gap);
+    padding: var(--pad); /* topo = 6px */
+  }
+
+  header{
+    display:flex; justify-content:space-between; align-items:center; gap:6px;
+    padding: 6px 10px; /* mais “respiro” no topo do título */
+    border:1px solid var(--stroke);
+    border-radius: var(--radius);
+    background: rgba(255,255,255,.06);
+    backdrop-filter: blur(1px);
+    box-shadow: var(--shadow2);
+    flex: 0 0 auto;
+  }
+  .brand{ display:flex; align-items:center; gap: 12px; min-width:0; }
+  .dot{
+    width:12px; height:12px; border-radius:999px;
+    background: radial-gradient(circle at 30% 30%, #fff, rgba(255,255,255,.35));
+    box-shadow: 0 0 0 6px rgba(80,255,215,.14), 0 0 26px rgba(80,255,215,.22);
+    flex:0 0 auto;
+  }
+  .brandTitle{ min-width:0; }
+  .brandTitle strong{
+    display:block;
+    font-size: 18px; /* título fixo 20px */
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    line-height: 1.05;
+  }
+  .brandTitle span{
+    display:block;
+    font-size: clamp(12px, 1.4vw, 14px);
+    color: var(--muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    margin-top:2px;
+  }
+
+  button{
+    appearance:none;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.08);
+    color: var(--ink);
+    font-weight: 900;
+    font-size: var(--btn); /* 16px */
+    padding: 7px 14px;      /* menor verticalmente */
+    border-radius: 14px;
+    cursor:pointer;
+    box-shadow: 0 10px 24px rgba(0,0,0,.25);
+    transition: transform .12s ease, background .12s ease, border-color .12s ease, filter .12s ease;
+    user-select:none;
+  }
+  button:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.28); }
+  button:active{ transform: translateY(0); filter: brightness(.98); }
+  button:disabled{ cursor:not-allowed; opacity:.55; }
+
+  .primary{
+    border-color: rgba(80,255,215,.35);
+    background: linear-gradient(180deg, rgba(80,255,215,.18), rgba(80,255,215,.08));
+  }
+  .danger{
+    border-color: rgba(255,95,122,.35);
+    background: linear-gradient(180deg, rgba(255,95,122,.18), rgba(255,95,122,.08));
+  }
+
+  main{
+    flex: 1 1 auto;
+    min-height:0;
+    display:grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: var(--gap); /* 6px */
+  }
+  @media (max-width: 1000px){
+    main{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    border:1px solid var(--stroke);
+    border-radius: var(--radius);
+    background: rgba(255,255,255,.06);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    position:relative;
+    min-height:0;
+  }
+
+  /* Scene */
+  .sceneMeta{
+    position:absolute; top: 16px; left:16px; right:16px;
+    border:1px solid rgba(255,255,255,.18);
+    background: rgba(10,14,30,.35);
+    backdrop-filter: blur(1px);
+    border-radius: 14px;
+    padding: 10px 12px;
+    box-shadow: 0 14px 30px rgba(0,0,0,.45);
+    z-index: 10;
+  }
+  .sceneMeta .tag{
+    font-size: 12px;
+    color: rgba(255,255,255,.78);
+    letter-spacing:.3px;
+    text-transform: uppercase;
+  }
+  .sceneMeta .subtitle{
+    margin-top: 4px;
+    font-size: 14px;
+    color: rgba(255,255,255,.82);
+    line-height:1.25;
+  }
+
+  .charRow{
+    position:absolute;
+    left: 18px; right:18px;
+    bottom: clamp(260px, 34vh, 360px);
+    display:flex;
+    justify-content:center;
+    align-items:flex-end;
+    gap: 10px;
+    pointer-events:none;
+    z-index: 12;
+  }
+  .charImg{
+    max-width: 350px;
+    max-height: 350px;
+    border-radius: 14px;
+    filter: drop-shadow(0 22px 38px rgba(0,0,0,.45));
+    transform-origin: 70% 20%;
+    animation: idle 2.8s ease-in-out infinite;
+    opacity:0;
+    transform: translateY(10px) scale(.985);
+    transition: opacity .22s ease, transform .22s ease;
+  }
+  .charImg.show{ opacity:1; transform: translateY(0) scale(1); }
+  @keyframes idle{ 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-6px) scale(1.01);} }
+
+  #speechBubble{
+    position:absolute;
+    bottom: calc(clamp(260px, 34vh, 360px) + min(220px, 38vh));
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    padding: 10px 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.92);
+    color: rgba(10,14,30,.92);
+    font-weight: 1000;
+    font-size: clamp(16px, 2.0vw, 20px);
+    border: 2px solid rgba(255,80,90,.55);
+    box-shadow: 0 18px 40px rgba(0,0,0,.45);
+    opacity: 0;
+    pointer-events:none;
+    transition: opacity .18s ease, transform .18s ease;
+    z-index: 20;
+    white-space: nowrap;
+    max-width: 92vw;
+    overflow:hidden;
+    text-overflow: ellipsis;
+  }
+  #speechBubble.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  #speechBubble::after{
+    content:"";
+    position:absolute;
+    left: 50%;
+    bottom: -10px;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid rgba(255,255,255,.92);
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.25));
+  }
+
+  .kaiImg{
+    width: min(140px, 14vw);
+    max-height: 190px;
+    filter: drop-shadow(0 18px 30px rgba(0,0,0,.45));
+    animation: kai 2.2s ease-in-out infinite;
+    opacity: .98;
+  }
+  @keyframes kai{ 0%,100%{transform:translateY(0) rotate(-1.5deg);} 50%{transform:translateY(-8px) rotate(1.5deg);} }
+
+  .dialog{
+    position:absolute;
+    left: 16px; right:16px; bottom: 16px;
+    border:1px solid rgba(255,255,255,.20);
+    background: rgba(10,14,30,.74);
+    backdrop-filter: blur(1px);
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.65);
+    padding: 14px 14px 12px;
+    z-index: 13;
+    height: clamp(260px, 32vh, 330px);
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+  }
+
+  .who{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .who strong{ font-size: var(--h2); letter-spacing:.2px; } /* 20px */
+  .badge{
+    font-size: 12px;
+    color: rgba(255,255,255,.78);
+    border: 1px solid rgba(255,255,255,.18);
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.06);
+    white-space:nowrap;
+  }
+
+  .dlgRight{ display:flex; align-items:flex-start; gap:10px; }
+  .dlgNav{ display:flex; gap:10px; }
+
+  .say{
+    font-size: var(--p);
+    line-height: 1.28;
+    color: rgba(255,255,255,.92);
+    overflow:hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    min-height: calc(var(--p) * 1.28 * 3);
+  }
+
+  .choices{
+    display:flex;
+    flex-direction:column;
+    gap: 8px;
+    overflow:auto;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .choiceBtn{
+    width:100%;
+    text-align:left;
+    background: rgba(255,255,255,.08);
+    padding: 9px 12px;     /* um pouco menor verticalmente */
+    border-radius: 12px;
+    font-size: 16px;       /* opções do quiz = 16px */
+    line-height: 1.15;
+  }
+  .choiceBtn.correct{ border-color: rgba(68,255,178,.45); }
+  .choiceBtn.wrong{ border-color: rgba(255,95,122,.45); }
+
+  .hintRow{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    flex: 0 0 auto;
+  }
+  .hint{ color: rgba(255,255,255,.78); font-size: 14px; }
+
+  /* Lab */
+  .lab{
+    padding: var(--pad);
+    display:flex;
+    flex-direction:column;
+    gap: 6px;
+    height: 100%;
+    min-height:0;
+  }
+  .lab h2{ margin:0; font-size: var(--h2); } /* 20px */
+  .lab p{ margin:0; color: var(--muted); font-size: 14px; line-height:1.35; }
+
+  .canvasWrap{
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 14px;
+    background: rgba(255,255,255,.05);
+    overflow:hidden;
+    box-shadow: 0 16px 40px rgba(0,0,0,.35);
+    flex: 0 0 auto;
+  }
+  canvas{ width:100%; height: 240px; display:block; }
+  .simCanvas{ height: 240px; }
+
+  .controlGrid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    overflow:auto;
+  }
+  @media (max-width: 520px){
+    .controlGrid{ grid-template-columns: 1fr; }
+  }
+  .ctrl{
+    border:1px solid rgba(255,255,255,.16);
+    border-radius: 14px;
+    background: rgba(255,255,255,.05);
+    padding: 10px 10px 8px;
+  }
+  .ctrl .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-weight: 900;
+    font-size: 14px;
+  }
+  .ctrl .val{ color: rgba(255,255,255,.86); font-weight:900; }
+  input[type="range"]{ width:100%; }
+
+  .simBtns{ display:flex; gap:10px; flex-wrap:nowrap; }
+
+  .toast{
+    position:fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%) translateY(12px);
+    background: rgba(12,18,40,.72);
+    border: 1px solid rgba(255,255,255,.20);
+    border-radius: 999px;
+    padding: 10px 14px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.55);
+    color: rgba(255,255,255,.92);
+    opacity:0;
+    transition: opacity .18s ease, transform .18s ease;
+    z-index: 60;
+    pointer-events:none;
+    font-weight: 900;
+    font-size: 14px;
+    max-width: 92vw;
+    white-space: nowrap;
+    overflow:hidden;
+    text-overflow: ellipsis;
+  }
+  .toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+
+  .errHud{
+    position:fixed; left:12px; right:12px; top:12px; z-index:9999;
+    padding:10px 12px; border-radius:14px; display:none;
+    background:rgba(255,95,122,.18); border:1px solid rgba(255,95,122,.35);
+    color:rgba(255,255,255,.92); font:900 13px system-ui;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="dot"></div>
+        <div class="brandTitle">
+          <strong>Wiki Physics Game 🕹️⚛️ Física (Forças & Movimento)</strong>
+          <span></span>
+        </div>
+      </div>
+      <div>
+        <button id="btnRestart" class="danger">Recomeçar</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel" aria-label="Cena do visual novel">
+        <div class="sceneMeta">
+          <div class="tag" id="sceneTag">Cena 1/20</div>
+          <div class="subtitle" id="sceneSub">Carregando…</div>
+        </div>
+
+        <div class="charRow" aria-label="Personagens (colados acima do diálogo)">
+          <img id="charImg" class="charImg" alt="Wikipe-tan" />
+          <img id="kaiImg" class="kaiImg" alt="Kai (gato)" src="./assets/kai.svg" />
+          <img id="medalIcon" alt="Medalha" style="display:none; width:min(96px, 10vw); filter: drop-shadow(0 16px 26px rgba(0,0,0,.45)); margin-left:6px;" />
+          <div id="speechBubble" aria-hidden="true">Tente de novo!</div>
+        </div>
+
+        <div class="dialog" aria-label="Diálogo">
+          <div class="who">
+            <strong id="who">Wiki</strong>
+            <div class="dlgRight">
+              <span class="badge" id="whoBadge">Aula</span>
+              <div class="dlgNav">
+                <button id="btnPrev">◀ Voltar</button>
+                <button id="btnRepeat">↻ Repetir</button>
+                <button id="btnNext" class="primary">Próximo ▶</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="say" id="say">Carregando diálogo…</div>
+          <div class="choices" id="choices" hidden></div>
+
+          <div class="hintRow">
+            <div class="hint" id="hint">Aperte ▶ Rodar para ver a simulação.</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button id="btnTreat" class="primary" hidden>Dar petisco 🍪</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel lab" aria-label="Laboratório: simulação e gráficos">
+        <h2 id="labTitle">Laboratório</h2>
+        <p id="labDesc">—</p>
+
+        <div class="canvasWrap"><canvas id="sim" width="900" height="420" class="simCanvas"></canvas></div>
+        <div class="canvasWrap"><canvas id="plot" width="900" height="420"></canvas></div>
+
+        <div class="controlGrid" id="controls"></div>
+
+        <div class="simBtns">
+          <button id="btnRun" class="primary">Rodar ▶</button>
+          <button id="btnPause">Pausar ⏸</button>
+          <button id="btnReset">Reset ⟲</button>
+        </div>
+
+        <p style="margin-top:2px">
+          Unidades: <b>m</b>, <b>s</b>. Vetores: <b>v</b>, <b>a</b>, <b>F</b>, <b>F_atrito</b>.
+        </p>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="errHud" id="errHud"></div>
+
+<script>
+
+
+// --- util: shuffle choices (quiz) ---
+function shuffleInPlace(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+  }
+  return arr;
+}
+// --- safety helpers (must exist before any handler uses them) ---
+function safeClass(elm, action, cls){
+  if(!elm || !elm.classList) return;
+  if(action === 'add') elm.classList.add(cls);
+  else if(action === 'remove') elm.classList.remove(cls);
+}
+// --- global time for syncing plot marker ---
+
+/* assets/:
+  school1.jpg, school2.jpg, school3.jpg, city.jpg
+  kai.svg, skate.png
+*/
+const ASSETS = {
+  // Personagem (locais em ./assets/)
+  wikipetan: {
+    main: "./assets/wiki1-main.png",
+    front: "./assets/wiki2-front.png",
+    school: "./assets/wiki3-school.png",
+    think: "./assets/wiki4-think.png",
+    furious: "./assets/wiki5-furious.png",
+    angry: "./assets/wiki6-angry.png",
+    happy: "./assets/wiki7-happy.png",
+    closeup: "./assets/wiki8-closeup.png",
+    medalPose: "./assets/wiki9-medal.png",
+    medalIcon: "./assets/wiki-medal.png"
+  },
+  local: {
+    kaiSvg:"./assets/kai.svg",
+    skatePng:"./assets/skate.png"
+  },
+  backgrounds: {
+    school1:"./assets/school1.jpg",
+    school2:"./assets/school2.jpg",
+    school3:"./assets/school3.jpg",
+    city:"./assets/city.jpg"
+  }
+};
+
+const EXAMPLES = {
+  displacement: { title:"Deslocamento Δx", desc:"Δx = x − x₀ (início e fim).", object:"kai", graph:"x",
+    defaults:{ tMax:6, x0:0, v0:0.6, mass:5.0, force:0.0, friction:0.0 } },
+  velocity: { title:"Velocidade (inclinação)", desc:"Em x(t), a inclinação é v.", object:"skate", graph:"x",
+    defaults:{ tMax:6, x0:0, v0:0.1, mass:5.0, force:0.0, friction:0.0 } },
+  acceleration: { title:"Aceleração", desc:"Aceleração muda v(t).", object:"skate", graph:"v",
+    defaults:{ tMax:6, x0:0, v0:0.0, mass:5.0, force:4.0, friction:0.0 } },
+  friction: { title:"Atrito (para e não volta)", desc:"Atrito só reduz |v| até 0.", object:"skate", graph:"v",
+    defaults:{ tMax:8, x0:0, v0:2.0, mass:5.0, force:0.0, friction:2.5 } },
+};
+
+const GAME = {
+  scenes: [
+    { tag:"Nível 1 • Boas-vindas", bg:"school1", who:"Wiki", badge:"Olá!", img:"main", example:"displacement",
+      preset:{}, text:"Oi! Eu sou a Wikipe-tan, mas pode me chamar de Wiki 😊 Hoje vamos aprender Física com simulações. Pss Pss, Kai, Kaaai? Cadê você?" },
+
+    { tag:"Nível 1 • Kai responde", bg:"school1", who:"Kai", badge:"Kai", img:"front", example:"displacement",
+      preset:{}, text:"Miau... Estou aqui e tô pronto! 😺" },
+{ tag:"Nível 1 • Como jogar", bg:"school1", who:"Wiki", badge:"Tutorial", img:"school", example:"displacement",
+      preset:{}, text:"Cada cena já vem configurada. Você só precisa apertar ▶ Rodar e observar vetores e gráfico." },
+
+    
+    { tag:"Nível 2 • Deslocamento", bg:"school1", who:"Wiki", badge:"Conceito", img:"main", example:"displacement",
+      preset:{ v0:0.6 }, text:"Deslocamento: Δx = x(final) − x(inicial). Só importa início e fim. O gráfico mostra o deslocamento em metros x (m) e o tempo em segundos t (s)." },
+{ tag:"Nível 2 • Kai bagunça", bg:"school1", who:"Wiki", badge:"😤", img:"furious", example:"displacement",
+      preset:{ v0:0.6 }, text:"Kai, pare de derrubar os meus livros! Vem aqui... 😾 (Furiosa, mas rindo por dentro...)" },
+
+    { tag:"Nível 3 • Inclinação (velocidade pequena)", bg:"school2", who:"Wiki", badge:"Inclinação", img:"school", example:"velocity",
+      preset:{ v0:0.1 }, text:"Observe a inclinação da reta quando colocamos uma velocidade bem baixa (v₀ = 0,1 m/s). Aperte ▶ Repare que no eixo y o gráfico está em -0.5 e 1.1 m. Isso representa um deslocamento muito pequeno (centímetros)!" },
+
+    { tag:"Nível 3 • Quiz Δx", bg:"school2", who:"Wiki", badge:"Quiz", img:"angry", example:"displacement",
+      preset:{}, quiz:{ prompt:"Um skatista vai de x₀=2 m para x=9 m. Qual é Δx?",
+        choices:[
+          { t:"Δx = 11 m", ok:false, why:"Isso é soma; deslocamento é diferença." },
+          { t:"Δx = 7 m", ok:true,  why:"Δx = 9 − 2 = 7 m." },
+          { t:"Δx = −7 m", ok:false, why:"Seria negativo se o final fosse menor." },
+          { t:"Precisa do tempo", ok:false, why:"Para Δx, basta início e fim." }
+        ] } },
+
+    { tag:"Nível 4 • Velocidade (inclinação da reta)", bg:"school2", who:"Wiki", badge:"Conceito", img:"main", example:"velocity",
+      preset:{ v0:1.0}, text:"Olhe no gráfico: em 5 segundos a distância percorrida foi de 5 metros. Usando a fórmula da velocidade média, (Δv = Δx/Δt) temos: 5 m / 5 s = 1 m/s. Essa é a velocidade média!" },
+
+    
+    { tag:"Nível 4 • Quiz velocidade média", bg:"school2", who:"Kai", badge:"Quiz", img:"angry", example:"velocity",
+      preset:{}, quiz:{ prompt:"Um gato percorre Δx=4 m em Δt=2 s. Qual é v̄?",
+        choices:[
+          { t:"8 m/s", ok:false, why:"Você multiplicou; aqui é dividir." },
+          { t:"0,5 m/s", ok:false, why:"Isso seria 1/2, mas é 4/2." },
+          { t:"2 m/s", ok:true,  why:"v̄ = 4/2 = 2 m/s." },
+          { t:"2 s/m", ok:false, why:"Unidade invertida." }
+        ] } },
+
+    { tag:"Nível 5 • Aceleração", bg:"school3", who:"Wiki", badge:"Conceito", img:"front", example:"acceleration",
+      preset:{ force:2.0, mass:2.0, v0:0.0 }, text:"A aceleração muda a velocidade. Se o valor de F ou de m for pequeno, acelera devagar. Se o valor for grande, acelera rápido." },
+{ tag:"Nível 5 • Atenção!", bg:"school3", who:"Wiki", badge:"Importante", img:"think", example:"acceleration",
+      preset:{ force:2.0, mass:5.0, v0:0.0 }, text:"Não confunda velocidade com aceleração, ok? No dia a dia utilizamos esses termos sem distinção, mas na verdade representam coisas diferentes... Velocidade é a taxa de variação do deslocamento no tempo (v = Δx/Δt). Aceleração é a taxa de variação da velocidade no tempo (a = Δv/Δt)." },
+
+    { tag:"Nível 6 • Exemplo aceleração pequena", bg:"school3", who:"Wiki", badge:"Exemplo", img:"front", example:"acceleration",
+      preset:{force:2.0, mass:4.0, v0:0.1}, text:"Aperte ▶. Se a aceleração for de pequena magnitude, a = 0,5 m/s². Observe v(t) e os vetores F e a." },
+
+    { tag:"Nível 6 • Exemplo aceleração grande", bg:"school3", who:"Kai", badge:"Exemplo", img:"main", example:"acceleration",
+      preset:{force:10.0, mass:2.0, v0:0.1}, text:"Aperte ▶. Se a aceleração for de grande magnitude, a = 5 m/s². Agora acelera bem mais!" },
+{ tag:"Nível 6 • Quase lá!", bg:"school3", who:"Wiki", badge:"😊", img:"happy", example:"acceleration",
+      preset:{ force:2.0, mass:5.0, v0:0.1 }, text:"Vamos lá, está quase acabando, agora você já sabe a diferença entre velocidade e aceleração, vamos aprender agora sobre forças e atrito!" },
+
+    { tag:"Nível 7 • Atrito", bg:"city", who:"Wiki", badge:"Conceito", img:"school", example:"friction",
+      preset:{ v0:2.0, force:0.0, friction:1.0}, text:"Atrito (F_atrito) aponta contra o movimento do skate e reduz a velocidade até parar." },
+
+    { tag:"Nível 7 • Veja na simulação", bg:"school3", who:"Wiki", badge:"MRU", img:"front", example:"velocity",
+      preset:{ v0:1.0, force:0.0, friction:0.0, tMax:6, x0:0 },
+      text:"Se o atrito é 0, F_atrito = 0, e se a força resultante também for zero, a velocidade permanece constante e o movimento é retilíneo e uniforme (MRU)" },
+
+    
+    { tag:"Nível 7 • Quiz atrito", bg:"city", who:"Wiki", badge:"Quiz", img:"angry", example:"friction",
+      preset:{}, quiz:{ prompt:"Se F=0 e existe atrito, o que acontece com o movimento?",
+        choices:[
+          { t:"Acelera para trás", ok:false, why:"Atrito não faz inverter o sentido sozinho." },
+          { t:"Fica com velocidade constante", ok:false, why:"Velocidade constante só se força resultante for 0." },
+          { t:"A posição fica fixa desde o início", ok:false, why:"Ela muda até parar." },
+          { t:"Desacelera e para", ok:true,  why:"Atrito reduz |v| até v=0." }
+        ] } },
+
+    { tag:"Nível 8 • 2ª Lei", bg:"city", who:"Wiki", badge:"F=m·a", img:"front", example:"acceleration",
+      preset:{ v0:0.0, force:6.0, mass:7.0, friction:0.0 }, text:"2ª Lei de Newton: Força é igual massa vezes aceleração. F = m · a. Aqui a = 3 m/s². Aperte ▶. Agora com uma força atuando no skate de 6 N e com massa de 7 kg, o movimento é devagar." },
+{ tag:"Nível 8 • Mesma força, massa menor", bg:"city", who:"Wiki", badge:"Comparação", img:"main", example:"acceleration",
+      preset:{ v0:0.0, force:6.0, mass:2.0, friction:0.0 }, text:"Agora reduzindo o valor da massa para 2 kg, com a mesma força de 6 N sendo aplicada, a aceleração é maior e o skate desenvolve velocidade mais rápido." },
+
+    { tag:"Nível 8 • Quiz F=m·a", bg:"city", who:"Wiki", badge:"Quiz", img:"angry", example:"acceleration",
+      preset:{}, quiz:{ prompt:"Um objeto de 2 kg sofre força resultante de 6 N. Qual é a aceleração?",
+        choices:[
+          
+          { t:"12 m/s²", ok:false, why:"Você multiplicou; precisa dividir." },
+          { t:"1/3 m/s²", ok:false, why:"Isso seria 2/6." },
+          { t:"3 m/s²", ok:true,  why:"a = F/m = 6/2 = 3 m/s²." },
+          { t:"8 m/s²", ok:false, why:"Não corresponde a F ou m." }
+        ] } },
+
+    { tag:"Nível 9 • Petisco", bg:"school1", who:"Kai", badge:"🍪", img:"think", example:"displacement",
+      preset:{ v0:0.5 }, treat:true, text:"Miau miau! Nossa... Estudar Física me dá uma fome! Acho que mereço um petisco... 😺 Clique no botão e veja a reação!" },
+
+    { tag:"Nível 9 • Medalha", bg:"city", who:"Wiki", badge:"🏅", img:"closeup", example:"displacement",
+      preset:{ tMax:6.0, v0:0.0, force:0.0, mass:5.0, friction:0.0 },
+      text:"Você ganhou uma medalha! 🏅 Kai tá comemorando do seu lado 😺" },
+
+    { tag:"Nível 10 • Livre para testar", bg:"school1", who:"Wiki", badge:"Livre", img:"main", example:"acceleration",
+      preset:{ x0:0, tMax:10.0, v0:1.0, force:1.0, mass:5.0, friction:2.0 },
+      text:"Modo livre: Agora é com você, mexa nos sliders, escolha o gráfico e aperte ▶ para testar!" },
+
+    { tag:"Nível 10 • Final", bg:"city", who:"Wiki", badge:"Obrigado!", img:"medalPose", example:"displacement",
+      preset:{ tMax:6.0, v0:0.0, force:0.0, mass:5.0, friction:0.0 },
+      text:"Obrigado por jogar! 🏅 Kai está feliz e essa medalha é sua! Até a próxima..." }
+  ]
+};
+
+/* UI refs */
+const el = {
+  sceneTag: document.getElementById("sceneTag"),
+  sceneSub: document.getElementById("sceneSub"),
+  who: document.getElementById("who"),
+  whoBadge: document.getElementById("whoBadge"),
+  say: document.getElementById("say"),
+  hint: document.getElementById("hint"),
+  choices: document.getElementById("choices"),
+  charImg: document.getElementById("charImg"),
+  btnRestart: document.getElementById("btnRestart"),
+  btnPrev: document.getElementById("btnPrev"),
+  btnRepeat: document.getElementById("btnRepeat"),
+  btnNext: document.getElementById("btnNext"),
+  btnTreat: document.getElementById("btnTreat"),
+  sim: document.getElementById("sim"),
+  plot: document.getElementById("plot"),
+  controls: document.getElementById("controls"),
+  btnRun: document.getElementById("btnRun"),
+  btnPause: document.getElementById("btnPause"),
+  btnReset: document.getElementById("btnReset"),
+  toast: document.getElementById("toast"),
+  errHud: document.getElementById("errHud"),
+  labTitle: document.getElementById("labTitle"),
+  labDesc: document.getElementById("labDesc"),
+};
+
+function showError(e){
+  const msg = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
+  el.errHud.textContent = "Erro no JS: " + msg;
+  el.errHud.style.display = "block";
+  console.error(e);
+}
+window.addEventListener("error", (ev)=> showError(ev.error || ev.message));
+
+function toast(msg){
+  el.toast.textContent = msg;
+  el.toast.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>el.toast.classList.remove("show"), 1600);
+}
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[ch])); }
+function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
+function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+
+/* BG + character */
+function setBackground(bgKey){
+  const url = ASSETS.backgrounds[bgKey] || "";
+  document.documentElement.style.setProperty("--bg-url", url ? `url("${url}")` : "none");
+}
+function setCharacter(imgKey){
+  const url = ASSETS.wikipetan[imgKey] || ASSETS.wikipetan.main;
+  el.charImg.src = url;
+  el.charImg.classList.add("show");
+}
+
+el.charImg.onerror = ()=>{ el.charImg.src = ASSETS.wikipetan.main;
+};
+
+/* Simulation + plot */
+const simCtx = el.sim.getContext("2d");
+const plotCtx = el.plot.getContext("2d");
+
+const imgCache = new Map();
+function loadImage(src){
+  if(imgCache.has(src)) return imgCache.get(src);
+  const p = new Promise((resolve, reject)=>{
+    const im = new Image();
+    if(/^https?:\/\//i.test(src)) im.crossOrigin = "anonymous";
+    im.onload = ()=> resolve(im);
+    im.onerror = ()=> reject(new Error("Falha ao carregar imagem: " + src));
+    im.src = src;
+  });
+  imgCache.set(src, p);
+  return p;
+}
+
+let idx = 0;
+let locked = false;
+
+let currentExample = EXAMPLES.displacement;
+let params = deepCopy(currentExample.defaults);
+
+let simData = [];
+let simT = 0;
+let running = false;
+let last = performance.now();
+
+function signOrZero(v){
+  if(Math.abs(v) < 1e-6) return 0;
+  return v > 0 ? 1 : -1;
+}
+
+/* atrito: só desacelera até parar; nunca inverte o sentido */
+function stepIntegrate(dt, state){
+  const m = Math.max(0.1, params.mass);
+  const Fapp = params.force;
+
+  // atrito cinético simplificado (constante), oposto ao movimento
+  let Ff = 0;
+  const sgnV = signOrZero(state.v);
+  if(sgnV !== 0 && params.friction > 0){
+    Ff = -sgnV * params.friction;
+  }
+
+  // resultante
+  let Fres = Fapp + Ff;
+  let a = Fres / m;
+
+  // se só há atrito (Fapp=0), garante que não cruza para o outro lado
+  const vNext = state.v + a*dt;
+  if(Fapp === 0 && params.friction > 0 && signOrZero(state.v) !== 0){
+    if(signOrZero(vNext) !== signOrZero(state.v)){
+      a = -state.v / dt; // desaceleração exata para parar
+    }
+  }
+
+  state.v = state.v + a*dt;
+  if(Math.abs(state.v) < 0.01) state.v = 0;
+  state.x = state.x + state.v*dt;
+  state.a = a;
+
+  return state;
+}
+
+function buildData(){
+  const dt = 1/60;
+  const tMax = params.tMax;
+  const st = { t:0, x: params.x0, v: params.v0, a:0 };
+  const out = [];
+  let stopped = false;
+
+  for(let t=0; t<=tMax + 1e-9; t+=dt){
+    st.t = t;
+
+    const sgnV = signOrZero(st.v);
+    const Fat = (params.friction>0 && sgnV!==0) ? (-sgnV * params.friction) : 0;
+    const Fres = params.force + Fat;
+    const aNow = Fres / Math.max(0.1, params.mass);
+
+    out.push({
+      t: st.t,
+      x: st.x,
+      v: st.v,
+      a: stopped ? 0 : aNow,
+      F: params.force,
+      Fat: Fat
+    });
+
+    if(stopped){
+      // mantém tudo reto/zerado após parar
+      st.v = 0;
+      st.a = 0;
+      continue;
+    }
+
+    stepIntegrate(dt, st);
+
+    if(Math.abs(st.v) < 0.01){
+      st.v = 0;
+      // se a força não vence o atrito (ou não há força), para de vez e não inverte
+      if(Math.abs(params.force) <= params.friction || params.force === 0){
+        stopped = true;
+      }
+    }
+  }
+  return out;
+}
+
+function playbackSpeedFactor(){
+  // didático: aumenta com |v| e |a|
+  const vSel = params.v0;
+  const aApprox = (params.force / Math.max(0.1, params.mass));
+  const f = 0.35 + Math.abs(vSel)*0.35 + Math.abs(aApprox)*0.55;
+  return clamp(f, 0.25, 6.0);
+}
+
+/* autoscale plot */
+window.PLOT_MARKER = null;
+function drawPlot(data, mode){
+  const w = el.plot.width, h = el.plot.height;
+  const pad = 70;
+
+  plotCtx.clearRect(0,0,w,h);
+  plotCtx.fillStyle = "rgba(255,255,255,0.04)";
+  plotCtx.fillRect(0,0,w,h);
+
+  const tMax = data[data.length-1].t;
+  const ys = data.map(p => mode==="x" ? p.x : mode==="v" ? p.v : p.a);
+
+  let yMin = Math.min(...ys);
+  let yMax = Math.max(...ys);
+  const span = Math.max(1e-6, yMax - yMin);
+  const padY = Math.max(0.45, span*0.18);
+  yMin -= padY; yMax += padY;
+  if(Math.abs(yMax-yMin) < 1){ yMin -= 0.5; yMax += 0.5; }
+
+  const mapX = (t)=> pad + (t/tMax)*(w-2*pad);
+  const mapY = (y)=> (h-pad) - ((y-yMin)/(yMax-yMin))*(h-2*pad);
+
+  // grid
+  plotCtx.strokeStyle = "rgba(255,255,255,0.07)";
+  plotCtx.lineWidth = 1;
+  const grid = 70;
+  for(let x=pad; x<w-pad; x+=grid){ plotCtx.beginPath(); plotCtx.moveTo(x,pad); plotCtx.lineTo(x,h-pad); plotCtx.stroke(); }
+  for(let y=pad; y<h-pad; y+=grid){ plotCtx.beginPath(); plotCtx.moveTo(pad,y); plotCtx.lineTo(w-pad,y); plotCtx.stroke(); }
+
+  // axes
+  plotCtx.strokeStyle = "rgba(255,255,255,0.22)";
+  plotCtx.lineWidth = 2;
+  plotCtx.beginPath(); plotCtx.moveTo(pad,h-pad); plotCtx.lineTo(w-pad,h-pad); plotCtx.stroke();
+  plotCtx.beginPath(); plotCtx.moveTo(pad,pad); plotCtx.lineTo(pad,h-pad); plotCtx.stroke();
+
+  // ticks
+  plotCtx.font = "900 15px system-ui";
+  plotCtx.fillStyle = "rgba(255,255,255,0.88)";
+  plotCtx.strokeStyle = "rgba(255,255,255,0.18)";
+  plotCtx.lineWidth = 1.6;
+
+  const xTicks = 6;
+  for(let i=0;i<=xTicks;i++){
+    const t = (tMax/xTicks)*i;
+    const x = mapX(t);
+    plotCtx.beginPath(); plotCtx.moveTo(x, h-pad); plotCtx.lineTo(x, h-pad+10); plotCtx.stroke();
+    plotCtx.fillText(t.toFixed(tMax<=8?1:0) + " s", x-16, h-pad+32);
+  }
+
+  const yTicks = 5;
+  for(let i=0;i<=yTicks;i++){
+    const yVal = yMin + (yMax-yMin)*(i/yTicks);
+    const y = mapY(yVal);
+    plotCtx.beginPath(); plotCtx.moveTo(pad-10, y); plotCtx.lineTo(pad, y); plotCtx.stroke();
+    plotCtx.fillText(yVal.toFixed(Math.abs(yMax-yMin)<10?1:0), 12, y+5);
+  }
+
+  plotCtx.font = "900 17px system-ui";
+  plotCtx.fillText("t (s)", w-pad-46, h-pad+56);
+  const yLabel = mode==="x" ? "x (m)" : mode==="v" ? "v (m/s)" : "a (m/s²)";
+  plotCtx.fillText(yLabel, pad-2, pad-22);
+
+  // curve
+  plotCtx.strokeStyle = "rgba(127,255,224,0.9)";
+  plotCtx.lineWidth = 4;
+  plotCtx.beginPath();
+  for(let i=0;i<data.length;i++){
+    const p = data[i];
+    const y = mode==="x" ? p.x : mode==="v" ? p.v : p.a;
+    const x = mapX(p.t), yy = mapY(y);
+    if(i===0) plotCtx.moveTo(x,yy); else plotCtx.lineTo(x,yy);
+  }
+  plotCtx.stroke();
+
+  plotCtx.fillStyle = "rgba(255,255,255,0.90)";
+  plotCtx.font = "900 15px system-ui";
+  
+  // marcador (ponto vermelho) opcional (ex: cena 7)
+  if(window.PLOT_MARKER && window.PLOT_MARKER.mode === mode){
+    const tM = window.PLOT_MARKER.t;
+    let best = data[0];
+    for(const p of data){ if(Math.abs(p.t - tM) < Math.abs(best.t - tM)) best = p; }
+    const yM = mode==="x" ? best.x : mode==="v" ? best.v : best.a;
+    const xPix = mapX(best.t);
+    const yPix = mapY(yM);
+
+    // linhas tracejadas até os eixos
+    plotCtx.save();
+    plotCtx.setLineDash([8,8]);
+    plotCtx.strokeStyle = "rgba(255,255,255,0.65)";
+    plotCtx.lineWidth = 2;
+    plotCtx.beginPath(); plotCtx.moveTo(xPix, mapY(yMin)); plotCtx.lineTo(xPix, yPix); plotCtx.stroke();
+    plotCtx.beginPath(); plotCtx.moveTo(pad, yPix); plotCtx.lineTo(xPix, yPix); plotCtx.stroke();
+    plotCtx.restore();
+
+    // ponto vermelho
+    plotCtx.fillStyle = "rgba(255,80,90,0.98)";
+    plotCtx.beginPath(); plotCtx.arc(xPix, yPix, 9, 0, Math.PI*2); plotCtx.fill();
+    plotCtx.strokeStyle = "rgba(0,0,0,0.35)";
+    plotCtx.lineWidth = 2;
+    plotCtx.stroke();
+
+    // legenda customizada
+    plotCtx.fillStyle = "rgba(255,255,255,0.94)";
+    plotCtx.font = "1000 18px system-ui";
+    const lbl = window.PLOT_MARKER.label || `${best.t.toFixed(0)} s`;
+    plotCtx.fillText(lbl, xPix + 12, yPix - 12);
+  }
+
+
+  // ponto sincronizado com a simulação (vermelho) + linhas tracejadas
+  if(typeof simT === "number" && data && data.length){
+    // encontra ponto mais próximo do tempo atual
+    let best = data[0];
+    for(const p of data){ if(Math.abs(p.t - simT) < Math.abs(best.t - simT)) best = p; }
+
+    // valor exibido na legenda do ponto:
+    // - se o gráfico é x(t), a legenda mostra v (m/s)
+    // - se o gráfico é v(t), a legenda mostra a (m/s²)
+    // - se o gráfico é a(t), a legenda mostra a (m/s²)
+    const showVal = (mode==="x") ? best.v : best.a;
+    const showUnit = (mode==="x") ? "m/s" : "m/s²";
+
+    const yVal = mode==="x" ? best.x : mode==="v" ? best.v : best.a;
+    const xPix = mapX(best.t);
+    const yPix = mapY(yVal);
+
+    // linhas tracejadas até os eixos
+    plotCtx.save();
+    plotCtx.setLineDash([8,8]);
+    plotCtx.strokeStyle = "rgba(255,255,255,0.55)";
+    plotCtx.lineWidth = 2;
+    // vertical até eixo x
+    plotCtx.beginPath(); plotCtx.moveTo(xPix, mapY(yMin)); plotCtx.lineTo(xPix, yPix); plotCtx.stroke();
+    // horizontal até eixo y
+    plotCtx.beginPath(); plotCtx.moveTo(pad, yPix); plotCtx.lineTo(xPix, yPix); plotCtx.stroke();
+    plotCtx.restore();
+
+    // ponto vermelho
+    plotCtx.fillStyle = "rgba(255,80,90,0.95)";
+    plotCtx.beginPath(); plotCtx.arc(xPix, yPix, 8, 0, Math.PI*2); plotCtx.fill();
+    plotCtx.strokeStyle = "rgba(0,0,0,0.35)";
+    plotCtx.lineWidth = 2;
+    plotCtx.stroke();
+
+    // etiqueta (mostra apenas m/s ou m/s² a partir dos dados)
+    plotCtx.fillStyle = "rgba(255,255,255,0.92)";
+    plotCtx.font = "900 18px system-ui";
+    plotCtx.fillText(`${showVal.toFixed(2)} ${showUnit}`, xPix + 12, yPix - 12);
+  }
+
+  // dica de unidade da inclinação (slope)
+  const slopeUnit = (mode==="x") ? "m/s" : (mode==="v") ? "m/s²" : "";
+  if(slopeUnit){
+    plotCtx.fillStyle = "rgba(255,255,255,0.78)";
+    plotCtx.font = "900 18px system-ui";
+    plotCtx.fillText(`Inclinação: ${slopeUnit}`, pad, h-pad+34);
+  }
+  plotCtx.fillText(`Autoscale • ${currentExample.title}`, pad, h-pad+56);
+}
+
+async function drawSimFrame(){
+  const w = el.sim.width, h = el.sim.height;
+  simCtx.clearRect(0,0,w,h);
+  simCtx.fillStyle = "rgba(255,255,255,0.03)";
+  simCtx.fillRect(0,0,w,h);
+
+  const pad = 60;
+  const baseY = h - 100;
+
+  // ground
+  simCtx.strokeStyle = "rgba(255,255,255,0.16)";
+  simCtx.lineWidth = 4;
+  simCtx.beginPath();
+  simCtx.moveTo(pad, baseY);
+  simCtx.lineTo(w-pad, baseY);
+  simCtx.stroke();
+
+  const iF = Math.min(simData.length-1, Math.floor(simT*60));
+  const p = simData[iF] || simData[0];
+
+  const xs = simData.map(pp=>pp.x);
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const span = Math.max(1, xMax - xMin);
+  const mapX = (x)=> pad + ((x - xMin)/span)*(w-2*pad);
+  const px = mapX(p.x);
+  const objY = baseY - 80;
+
+  let skate=null, kai=null;
+  try{ skate = await loadImage(ASSETS.local.skatePng); }catch(e){}
+  try{ kai = await loadImage(ASSETS.local.kaiSvg); }catch(e){}
+
+  if(currentExample.object === "skate"){
+    const sw=170, sh=86;
+    if(skate) simCtx.drawImage(skate, px - sw/2, objY, sw, sh);
+  }else{
+    const kw=104, kh=104;
+    if(kai) simCtx.drawImage(kai, px - kw/2, objY - 10, kw, kh);
+  }
+
+  function arrow(x0,y0,x1,y1,label){
+    simCtx.strokeStyle = "rgba(255,255,255,0.88)";
+    simCtx.lineWidth = 4;
+    simCtx.beginPath(); simCtx.moveTo(x0,y0); simCtx.lineTo(x1,y1); simCtx.stroke();
+    const ang = Math.atan2(y1-y0, x1-x0);
+    const ah=12;
+    simCtx.beginPath();
+    simCtx.moveTo(x1,y1);
+    simCtx.lineTo(x1 - ah*Math.cos(ang - Math.PI/6), y1 - ah*Math.sin(ang - Math.PI/6));
+    simCtx.lineTo(x1 - ah*Math.cos(ang + Math.PI/6), y1 - ah*Math.sin(ang + Math.PI/6));
+    simCtx.closePath();
+    simCtx.fillStyle = "rgba(255,255,255,0.88)";
+    simCtx.fill();
+    simCtx.font = "900 24px system-ui";
+    simCtx.fillText(label, x1+8, y1+6);
+  }
+
+  // vectors (bigger)
+  const vLen = clamp(Math.abs(p.v)*28, 0, 240);
+  const aLen = clamp(Math.abs(p.a)*46, 0, 240);
+  const fLen = clamp(Math.abs(params.force)*10, 0, 240);
+  const faLen = clamp(Math.abs(params.friction)*10, 0, 240);
+
+  const vDir = p.v >= 0 ? 1 : -1;
+  const aDir = p.a >= 0 ? 1 : -1;
+
+  arrow(px, objY-10, px + vDir*vLen, objY-10, "v");
+  arrow(px, objY-42, px + aDir*aLen, objY-42, "a");
+
+  // show F and F_atrito for all examples (student asked vectors available)
+  if(params.force !== 0){
+    const Fdir = params.force >= 0 ? 1 : -1;
+    arrow(px, objY-74, px + Fdir*fLen, objY-74, "F");
+  }else{
+    simCtx.fillStyle="rgba(255,255,255,.82)";
+    simCtx.font="900 16px system-ui";
+    simCtx.fillText("F=0", px+10, objY-70);
+  }
+
+  // atrito (oposto ao movimento; se v=0, não desenha seta longa)
+  if(params.friction > 0){
+    const sgnV = signOrZero(p.v);
+    if(sgnV !== 0){
+      arrow(px, objY-106, px + (-sgnV)*faLen, objY-106, "F_atrito");
+    }else{
+      simCtx.fillStyle="rgba(255,255,255,.82)";
+      simCtx.font="900 16px system-ui";
+      simCtx.fillText("F_atrito", px+10, objY-102);
+    }
+  }
+
+  simCtx.fillStyle="rgba(255,255,255,.90)";
+  simCtx.font="900 16px system-ui";
+  simCtx.fillText(`Animação: x${playbackSpeedFactor().toFixed(2)} | v₀=${params.v0.toFixed(2)} m/s | atrito=${params.friction.toFixed(1)} N`, pad, 30);
+}
+
+async function tick(now){
+  try{
+    const dt = (now-last)/1000;
+    last = now;
+
+    if(running){
+      simT += dt * playbackSpeedFactor();
+      const tMax = params.tMax;
+
+      // se parou por atrito e sem força aplicada, pausa automaticamente
+      const iNow = Math.min(simData.length-1, Math.floor(simT*60));
+      const pNow = simData[iNow] || simData[0];
+      if(params.force === 0 && params.friction > 0 && Math.abs(pNow.v) < 0.01){
+        running = false;
+        toast("Parou por atrito 🧲");
+      }
+
+      if(simT > tMax){ simT = tMax; running = false; toast("Simulação finalizada ✅"); }
+    }
+
+    await drawSimFrame();
+    // atualiza o gráfico a cada frame para o ponto vermelho acompanhar a simulação
+    try{ drawPlot(simData, currentExample.graph); }catch(_e){}
+    requestAnimationFrame(tick);
+  }catch(e){
+    showError(e);
+    running=false;
+    requestAnimationFrame(tick);
+  }
+}
+
+/* Controls */
+const CONTROL_SPECS = [
+  { key:"tMax", label:"Duração", unit:"s", min:2, max:14, step:0.5 },
+    { key:"v0",  label:"Velocidade inicial v₀", unit:"m/s", min:-2, max:8, step:0.1 },
+  { key:"force", label:"Força F", unit:"N", min:-24, max:24, step:0.5 },
+  { key:"mass", label:"Massa m", unit:"kg", min:0.5, max:12, step:0.5 },
+  { key:"friction", label:"Atrito", unit:"N", min:0, max:12, step:0.5 },
+];
+
+function buildControls(){
+  el.controls.innerHTML = "";
+  for(const spec of CONTROL_SPECS){
+    const wrap = document.createElement("div");
+    wrap.className = "ctrl";
+    wrap.innerHTML = `
+      <div class="top">
+        <div>${escapeHtml(spec.label)} <span style="opacity:.75">(${escapeHtml(spec.unit)})</span></div>
+        <div class="val"></div>
+      </div>
+      <input type="range" min="${spec.min}" max="${spec.max}" step="${spec.step}" />
+    `;
+    el.controls.appendChild(wrap);
+    const rng = wrap.querySelector("input");
+    const val = wrap.querySelector(".val");
+
+    rng.value = (params[spec.key] ?? spec.min);
+    val.textContent = `${Number(rng.value).toFixed(spec.step < 1 ? 1 : 0)} ${spec.unit}`;
+
+    rng.addEventListener("input", ()=>{
+      params[spec.key] = Number(rng.value);
+      val.textContent = `${Number(rng.value).toFixed(spec.step < 1 ? 1 : 0)} ${spec.unit}`;
+      recompute(true);
+    });
+  }
+}
+
+function applyExample(exampleKey){
+  currentExample = EXAMPLES[exampleKey] || EXAMPLES.displacement;
+  params = deepCopy(currentExample.defaults);
+  el.labTitle.textContent = `Laboratório: ${currentExample.title}`;
+  el.labDesc.textContent = currentExample.desc;
+  buildControls();
+  recompute(true);
+}
+
+function recompute(resetTime){
+  simData = buildData();
+  if(resetTime) simT = 0;
+  drawPlot(simData, currentExample.graph);
+}
+
+/* VN */
+function goNext(){
+  if(locked) return;
+  idx = Math.min(GAME.scenes.length-1, idx+1);
+  renderScene();
+}
+function goPrev(){
+  idx = Math.max(0, idx-1);
+  renderScene();
+  toast("Voltou ◀");
+}
+
+function renderScene(){
+  const s = GAME.scenes[idx];
+
+  // próximo diálogo: reseta simulação
+  running = false;
+  simT = 0;
+
+  el.sceneTag.textContent = `Cena ${idx+1}/${GAME.scenes.length} • ${s.tag || ""}`.trim();
+  el.sceneSub.textContent = `Exemplo: ${(EXAMPLES[s.example]||{}).title || "Física"} • (aperte ▶ Rodar)`;
+
+  el.who.textContent = s.who || "Wikipe-tan";
+  el.whoBadge.textContent = s.badge || "Aula";
+
+  setBackground(s.bg || "school1");
+  setCharacter(s.img || "casual");
+
+  el.btnTreat.hidden = !s.treat;
+
+  applyExample(s.example || "displacement");
+  // marcador no gráfico (ex: ponto vermelho)
+  window.PLOT_MARKER = null;
+  if((s.tag||"").startsWith("7 •")){ window.PLOT_MARKER = { t:5, mode:"x", label:"5 m/s" }; }
+  if((s.tag||"").startsWith("20 •") || (s.tag||"").startsWith("21 •") || (s.tag||"").startsWith("22 •")){ if(el.medalIcon) el.medalIcon.style.display = "block"; }
+  if(s.preset && typeof s.preset === "object"){
+    Object.assign(params, s.preset);
+    buildControls();
+    recompute(true);
+  }
+
+  // texto + quiz
+  el.choices.hidden = true;
+  el.choices.innerHTML = "";
+  el.hint.textContent = "Aperte ▶ Rodar para ver a simulação. (Exemplo já configurado.)";
+
+  if(s.quiz){
+    locked = true;
+    el.btnNext.disabled = true;
+    el.say.innerHTML = `<b>${escapeHtml(s.quiz.prompt)}</b>`;
+    el.hint.textContent = "Se acertar, avança automaticamente ✅";
+
+    el.choices.hidden = false;
+    const shuffledChoices = (typeof shuffleInPlace==='function') ? shuffleInPlace(s.quiz.choices.map(c=>({...c}))) : s.quiz.choices.map(c=>({...c}));
+    shuffledChoices.forEach((c, i)=>{
+      const b = document.createElement("button");
+      b.className = "choiceBtn";
+      b.textContent = `${String.fromCharCode(65+i)}) ${c.t}`;
+      b.onclick = ()=> onChoice(b, c);
+      el.choices.appendChild(b);
+    });
+  }else{
+    locked = false;
+    el.btnNext.disabled = false;
+    el.say.textContent = s.text || "";
+  }
+}
+
+function onChoice(btn, choice){
+  [...el.choices.querySelectorAll("button")].forEach(b=> b.classList.remove("correct","wrong"));
+  if(choice.ok){
+    btn.classList.add("correct");
+    if(el.speechBubble && el.speechBubble.classList) el.speechBubble.classList.remove("show");
+
+    el.hint.innerHTML = `<span style="color: var(--good); font-weight:900;">Correto.</span> ${escapeHtml(choice.why)}`;
+    toast("✅ Correto! Avançando…");
+    locked = false;
+    el.btnNext.disabled = false;
+
+    // avança APENAS 1 cena
+    setTimeout(()=>{ if(idx < GAME.scenes.length-1) goNext(); }, 450);
+
+  }else{
+    btn.classList.add("wrong");
+    setCharacter("think");
+    if(el.speechBubble) el.speechBubble.textContent = "Tente de novo!";
+    if(el.speechBubble && el.speechBubble.classList) el.speechBubble.classList.add("show");
+    el.hint.innerHTML = `<span style="color: var(--bad); font-weight:900;">Ops.</span> ${escapeHtml(choice.why)}`;
+    toast("↩️ Tente de novo!");
+  }
+}
+
+/* Buttons */
+el.btnRestart.onclick = ()=>{ idx = 0; renderScene(); toast("Recomeçou ✅"); };
+el.btnPrev.onclick = ()=> goPrev();
+el.btnRepeat.onclick = ()=> renderScene();
+el.btnNext.onclick = ()=> goNext();
+
+el.btnRun.onclick = ()=>{ running = true; toast("Rodando ▶"); };
+el.btnPause.onclick = ()=>{ running = false; toast("Pausado ⏸"); };
+el.btnReset.onclick = ()=>{ running = false; simT = 0; toast("Reset ⟲"); };
+
+el.btnTreat.onclick = ()=>{
+  toast("🍪 Petisco entregue! Kai ficou feliz 😺");
+  el.hint.innerHTML = `<span style="color: var(--good); font-weight:900;">Kai:</span> MIAU!!! Obrigado!`;
+  setTimeout(()=> goNext(), 900);
+};
+
+/* Start */
+renderScene();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

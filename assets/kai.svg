@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="Kai, o gato">
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1">
+      <stop offset="0" stop-color="rgba(255,255,255,.92)"/>
+      <stop offset="1" stop-color="rgba(180,220,255,.80)"/>
+    </linearGradient>
+  </defs>
+  <circle cx="110" cy="110" r="88" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.20)" stroke-width="2"/>
+  <path d="M60 92 L78 60 L92 98 Z" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.20)" stroke-width="2"/>
+  <path d="M160 92 L128 60 L128 98 Z" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.20)" stroke-width="2"/>
+  <ellipse cx="110" cy="128" rx="58" ry="48" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.20)" stroke-width="2"/>
+  <circle cx="90" cy="122" r="8" fill="url(#g1)"/>
+  <circle cx="130" cy="122" r="8" fill="url(#g1)"/>
+  <circle cx="90" cy="122" r="3" fill="rgba(0,0,0,.55)"/>
+  <circle cx="130" cy="122" r="3" fill="rgba(0,0,0,.55)"/>
+  <path d="M110 132 l-7 10 h14 z" fill="rgba(255,180,120,.85)"/>
+  <path d="M94 144 q16 14 32 0" fill="none" stroke="rgba(255,255,255,.72)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M58 132 q-22 8 -34 -8" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M162 132 q22 8 34 -8" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round"/>
+  <text x="110" y="196" text-anchor="middle" fill="rgba(255,255,255,.8)" font-size="18" font-weight="800">Kai</text>
+</svg>
