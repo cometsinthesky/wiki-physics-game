@@ -1,4 +1,4 @@
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/b87ee797-1036-4edf-b325-fd0f9eec61f8" /># Wiki Physics Game 🕹️⚛️
+# Wiki Physics Game 🕹️⚛️
 
 ## [Jogue o Wiki Physics Game agora!](https://cometsinthesky.github.io/wiki-physics-game/)  
 
