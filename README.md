@@ -105,6 +105,7 @@ A **Wikipe-tan (ウィキペたん)** é uma personificação (mascote) da Wikip
 - A Wikipe-tan chegou a participar de uma votação de mascote e mesmo sem vencer, **permaneceu popular**, recebendo novas ilustrações ao longo do tempo.  
 
 **Por que a Wikipe-tan aparece neste jogo? (inspiração)**
+
 Neste projeto, a Wikipe-tan foi usada como **ponte narrativa** entre a linguagem de cultura pop (visual novel) e a aprendizagem de Física: ela atua como “guia” do estudante, ajudando a transformar observações do movimento (simulação + vetores + gráficos) em **explicações com evidência**, mantendo o tom leve e engajador típico do universo Animangá — mas com foco em raciocínio físico e interpretação de gráficos e fenômenos relacionados à velocidade, forças e aceleração.
 
 ## ✉️ Contato
