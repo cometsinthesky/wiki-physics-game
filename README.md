@@ -51,9 +51,9 @@ Para manter a atividade produtiva:
 2. **Jogue para aprender:** o foco é o raciocínio físico, não só “passar de fase”.
 3. **Explique sua escolha:** ao responder o quiz, justifique com fórmula, gráfico ou observação do movimento.
 4. **Respeite a vez:** em duplas/grupos, alternem controle e explicação.
-5. **Sem spoilers:** não grite respostas para outros grupos — faça perguntas-guia.
+5. **Sem spoilers:** não grite respostas para outros grupos - faça perguntas-guia.
 6. **Use unidades:** sempre registre com **m, s, m/s, m/s²**.
-7. **Seja colaborativo(a):** divergências são parte do pensamento científico — discutam com respeito.
+7. **Seja colaborativo(a):** divergências são parte do pensamento científico - discutam com respeito.
 
 ## Perguntas do Professor (Durante o Jogo)
 
@@ -93,7 +93,7 @@ Funciona bem com habilidades e objetivos ligados a:
 
 ## Narrativa e Créditos
 
-A narrativa do jogo Wiki Physics Game gira em torno da Wiki (Wikipe-tan), uma guia curiosa e bem-humorada que conduz o estudante por cenas curtas de visual novel, sempre conectando o que aparece na história ao que acontece no laboratório (simulação + vetores + gráficos). Ao lado dela está o Kai, um gato “atentado” e bagunceiro que interrompe a aula, derruba livros, pede petisco e transforma cada confusão em gancho para aprender Física: quando o skate desliza, quando o atrito “segura” o movimento, quando a força muda a aceleração… a dupla convida o jogador a apertar ▶ Rodar, observar v, a, F e F_atrito, e justificar respostas com evidências no gráfico — avançando de fase ao acertar os quizzes e celebrando com uma medalha no final.
+A narrativa do jogo Wiki Physics Game gira em torno da Wiki (Wikipe-tan), uma guia curiosa e bem-humorada que conduz o estudante por cenas curtas de visual novel, sempre conectando o que aparece na história ao que acontece no laboratório (simulação + vetores + gráficos). Ao lado dela está o Kai, um gato “atentado” e bagunceiro que interrompe a aula, derruba livros, pede petisco e transforma cada confusão em gancho para aprender Física: quando o skate desliza, quando o atrito “segura” o movimento, quando a força muda a aceleração… a dupla convida o jogador a apertar ▶ Rodar, observar v, a, F e F_atrito, e justificar respostas com evidências no gráfico, avançando de fase ao acertar os quizzes e celebrando com uma medalha no final.
 
 ### Wikipe-tan (personagem / inspiração)
 
@@ -106,7 +106,7 @@ A **Wikipe-tan (ウィキペたん)** é uma personificação (mascote) da Wikip
 
 **Por que a Wikipe-tan aparece neste jogo? (inspiração)**
 
-Neste projeto, a Wikipe-tan foi usada como **ponte narrativa** entre a linguagem de cultura pop (visual novel) e a aprendizagem de Física: ela atua como “guia” do estudante, ajudando a transformar observações do movimento (simulação + vetores + gráficos) em **explicações com evidência**, mantendo o tom leve e engajador típico do universo Animangá — mas com foco em raciocínio físico e interpretação de gráficos e fenômenos relacionados à velocidade, forças e aceleração.
+Neste projeto, a Wikipe-tan foi usada como **ponte narrativa** entre a linguagem de cultura pop (visual novel) e a aprendizagem de Física: ela atua como “guia” do estudante, ajudando a transformar observações do movimento (simulação + vetores + gráficos) em **explicações com evidência**, mantendo o tom leve e engajador típico do universo Animangá, mas com foco em raciocínio físico e interpretação de gráficos e fenômenos relacionados à velocidade, forças e aceleração.
 
 ## ✉️ Contato
 
