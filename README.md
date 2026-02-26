@@ -93,8 +93,6 @@ Funciona bem com habilidades e objetivos ligados a:
 
 ## Narrativa e Créditos
 
-### Narrativa
-
 A narrativa do jogo Wiki Physics Game gira em torno da Wiki (Wikipe-tan), uma guia curiosa e bem-humorada que conduz o estudante por cenas curtas de visual novel, sempre conectando o que aparece na história ao que acontece no laboratório (simulação + vetores + gráficos). Ao lado dela está o Kai, um gato “atentado” e bagunceiro que interrompe a aula, derruba livros, pede petisco e transforma cada confusão em gancho para aprender Física: quando o skate desliza, quando o atrito “segura” o movimento, quando a força muda a aceleração… a dupla convida o jogador a apertar ▶ Rodar, observar v, a, F e F_atrito, e justificar respostas com evidências no gráfico — avançando de fase ao acertar os quizzes e celebrando com uma medalha no final.
 
 ### Wikipe-tan (personagem / inspiração)
