@@ -4,7 +4,7 @@
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/cometsinthesky/wiki-physics-game/main/assets/fundo%20wiki%20physics.jpg"
-       width="70%"
+       width="80%"
        alt="wiki-physics-game">
 </p>
 
