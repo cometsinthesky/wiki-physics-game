@@ -421,24 +421,33 @@
       gap: 10px;
     }
 
-    .say {
+    .say{
       font-size: var(--p);
       line-height: 1.28;
       color: rgba(255, 255, 255, .92);
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      min-height: calc(var(--p) * 1.28 * 3);
+      white-space: normal;        /* permite quebrar linha */
+      overflow-wrap: anywhere;    /* quebra palavras muito longas */
+      word-break: normal;         /* padrão (não “esmaga” palavras) */
+      /* ✅ remove o corte */
+      display: block;
+      overflow: visible;
+      -webkit-line-clamp: unset;
+      -webkit-box-orient: unset;
+      padding-top: 2px;
+
+      /* ✅ remove o “vazio” abaixo da pergunta */
+      min-height: 30px;              /* ou simplesmente apague a linha min-height */
+      margin-bottom: 0;                  /* garante que não crie margem extra */
     }
 
     .choices {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
       overflow: auto;
       flex: 1 1 auto;
-      min-height: 0;
+      padding-top: 5px;     /* espaço antes do 1º item */
+      padding-bottom: 5px;  /* espaço depois do último item */
     }
 
     .choiceBtn {
@@ -787,18 +796,18 @@
         },
         {
           tag: "Nível 2 • Kai bagunça", bg: "school1", who: "Wiki", badge: "😤", img: "furious", example: "displacement",
-          preset: { v0: 0.6 }, text: "Kai, pare de derrubar os meus livros! Vem aqui... 😾 (Furiosa, mas rindo por dentro...)"
+          preset: { v0: 0.6 }, text: "Kai, pare de derrubar os meus livros! Vem aqui... 😾 (Furiosa, mas rindo por dentro...)."
         },
 
         {
           tag: "Nível 3 • Inclinação (velocidade pequena)", bg: "school2", who: "Wiki", badge: "Inclinação", img: "school", example: "velocity",
-          preset: { v0: 0.1 }, text: "Observe a inclinação da reta quando colocamos uma velocidade bem baixa (v₀ = 0,1 m/s). Aperte ▶ Repare que no eixo y o gráfico está em -0.5 e 1.1 m. Isso representa um deslocamento muito pequeno (centímetros)!"
+          preset: { v0: 0.1 }, text: "Observe a inclinação da reta quando colocamos uma velocidade bem baixa (v₀ = 0,1 m/s). Aperte ▶. Repare que no eixo y o gráfico está em -0.5 e 1.1 m. Isso representa um deslocamento muito pequeno (centímetros)!"
         },
 
         {
           tag: "Nível 3 • Quiz Δx", bg: "school2", who: "Wiki", badge: "Quiz", img: "angry", example: "displacement",
           preset: {}, quiz: {
-            prompt: "Um skatista vai de x₀=2 m para x=9 m. Qual é Δx?",
+            prompt: "Um skatista vai de x₀ = 2 m para x = 9 m. Qual foi o deslocamento (Δx)?",
             choices: [
               { t: "Δx = 11 m", ok: false, why: "Isso é soma; deslocamento é diferença." },
               { t: "Δx = 7 m", ok: true, why: "Δx = 9 − 2 = 7 m." },
@@ -817,7 +826,7 @@
         {
           tag: "Nível 4 • Quiz velocidade média", bg: "school2", who: "Kai", badge: "Quiz", img: "angry", example: "velocity",
           preset: {}, quiz: {
-            prompt: "Um gato percorre Δx=4 m em Δt=2 s. Qual é v̄?",
+            prompt: "Um gato percorre Δx = 4 m em Δt = 2 s. Qual é a sua velocidade média?",
             choices: [
               { t: "8 m/s", ok: false, why: "Você multiplicou; aqui é dividir." },
               { t: "0,5 m/s", ok: false, why: "Isso seria 1/2, mas é 4/2." },
@@ -829,7 +838,7 @@
 
         {
           tag: "Nível 5 • Aceleração", bg: "school3", who: "Wiki", badge: "Conceito", img: "front", example: "acceleration",
-          preset: { force: 2.0, mass: 2.0, v0: 0.0 }, text: "A aceleração muda a velocidade. Se o valor de F ou de m for pequeno, acelera devagar. Se o valor for grande, acelera rápido."
+          preset: { force: 2.0, mass: 2.0, v0: 0.0 }, text: "A aceleração muda a velocidade. Se o valor de F for pequeno e o de m for grande, acelera devagar. Aperte ▶ e veja o skate acelerar lentamente."
         },
         {
           tag: "Nível 5 • Atenção!", bg: "school3", who: "Wiki", badge: "Importante", img: "think", example: "acceleration",
@@ -838,7 +847,7 @@
 
         {
           tag: "Nível 6 • Exemplo aceleração pequena", bg: "school3", who: "Wiki", badge: "Exemplo", img: "front", example: "acceleration",
-          preset: { force: 2.0, mass: 4.0, v0: 0.1 }, text: "Aperte ▶. Se a aceleração for de pequena magnitude, a = 0,5 m/s². Observe v(t) e os vetores F e a."
+          preset: { force: 2.0, mass: 4.0, v0: 0.1 }, text: "Aperte ▶. Se a aceleração for de pequena magnitude, a = 0,5 m/s². Observe o gráfico e os vetores F e a."
         },
 
         {
@@ -852,7 +861,7 @@
 
         {
           tag: "Nível 7 • Atrito", bg: "city", who: "Wiki", badge: "Conceito", img: "school", example: "friction",
-          preset: { v0: 2.0, force: 0.0, friction: 1.0 }, text: "Atrito (F_atrito) aponta contra o movimento do skate e reduz a velocidade até parar."
+          preset: { v0: 2.0, force: 0.0, friction: 1.0 }, text: "Atrito (F_atrito) é uma força de contato entre as superfícies. Ela sempre atua contra o movimento (ou contra a tendência de escorregar), por isso diminui a velocidade do skate até ele parar. Aperte ▶ e veja o atrito em ação."
         },
 
         {
@@ -865,7 +874,7 @@
         {
           tag: "Nível 7 • Quiz atrito", bg: "city", who: "Wiki", badge: "Quiz", img: "angry", example: "friction",
           preset: {}, quiz: {
-            prompt: "Se F=0 e existe atrito, o que acontece com o movimento? Aperte ▶ e responda.",
+            prompt: "Se F = 0 e existe atrito, o que acontece com o movimento? Aperte ▶.",
             choices: [
               { t: "Acelera para trás", ok: false, why: "Atrito não faz inverter o sentido sozinho." },
               { t: "Fica com velocidade constante", ok: false, why: "Velocidade constante só se força resultante for 0." },
@@ -881,7 +890,7 @@
         },
         {
           tag: "Nível 8 • Mesma força, massa menor", bg: "city", who: "Wiki", badge: "Comparação", img: "main", example: "acceleration",
-          preset: { v0: 0.0, force: 6.0, mass: 2.0, friction: 0.0 }, text: "Agora reduzindo o valor da massa para 2 kg, com a mesma força de 6 N sendo aplicada, a aceleração é maior e o skate desenvolve velocidade mais rápido, maior aceleração, aqui a = 3 m/s²"
+          preset: { v0: 0.0, force: 6.0, mass: 2.0, friction: 0.0 }, text: "Agora reduzindo o valor da massa para 2 kg, com a mesma força de 6 N sendo aplicada, a aceleração é maior e o skate desenvolve velocidade mais rápido, maior aceleração, aqui a = 3 m/s². Aperte ▶."
         },
 
         {
