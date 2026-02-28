@@ -8,6 +8,13 @@ Wikipe-tan assets used in this project are sourced as open content via Wikipedia
 license terms specified on each corresponding file page (e.g., CC BY-SA / GFDL, as applicable). Proper attribution is
 provided in accordance with those terms.
 
+All background images used in Wiki Physics Game were sourced from publicly available pages on the internet.
+Copyright and usage rights remain with their respective creators / rightsholders.
+
+These backgrounds are included strictly for educational and non-commercial purposes, with no claim of ownership.
+If you are a rights holder and believe any material is used improperly, please contact the author to request credit update
+or removal.
+
 By exercising the Licensed Rights (defined below), You accept and agree to be bound by the terms and conditions of this Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International Public License ("Public License"). To the extent this Public License may be interpreted as a contract, You are granted the Licensed Rights in consideration of Your acceptance of these terms and conditions, and the Licensor grants You such rights in consideration of benefits the Licensor receives from making the Licensed Material available under these terms and conditions.
 
 ## Section 1 – Definitions
